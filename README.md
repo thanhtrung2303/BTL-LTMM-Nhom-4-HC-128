@@ -36,6 +36,7 @@ Nhiệm vụ, reviewer, mốc nghiệm thu và phân chia báo cáo/slide: [Kế
 
 | Tài liệu | Nội dung |
 |---|---|
+| [Windows build/test](docs/windows-build-test.md) | Cài MSYS2, terminal VS Code, build/test và khắc phục lỗi |
 | [Conventions](docs/conventions.md) | Quy ước C, commit, PR và quản lý dữ liệu |
 | [Team plan](docs/team-plan.md) | Phân công, review chéo, tiến độ và bàn giao |
 | [Spec notes](docs/spec-notes.md) | Ghi chú thuật toán, điểm cần xác minh và tài liệu tham khảo |
@@ -66,26 +67,45 @@ Các thư mục hiện được giữ bằng `.gitkeep` khi chưa có nội dung
 
 ## Chuẩn bị và chạy dự án
 
-Môi trường chuẩn: **Ubuntu hoặc Ubuntu trên WSL**, C11, GCC/Clang, GNU Make và Git.
+Môi trường làm việc chung: **Windows 10/11 x64 + VS Code + MSYS2 UCRT64 + GCC + GNU Make**. Không yêu cầu cài Ubuntu hoặc WSL trên máy thành viên. CI Linux là nơi chạy thêm GCC/Clang và ASan/UBSan.
+
+Xem [hướng dẫn Windows từng bước](docs/windows-build-test.md) để cài công cụ, cấu hình terminal VS Code và xử lý lỗi thường gặp. VS Code không tự kèm compiler; extension C/C++ hỗ trợ soạn thảo/debug, còn GCC thực hiện biên dịch.
+
+Sau khi cài MSYS2, mở **MSYS2 UCRT64** và cập nhật hệ thống:
 
 ```bash
-sudo apt update
-sudo apt install build-essential clang git
+pacman -Syu
+```
 
+Nếu được yêu cầu đóng terminal, đóng toàn bộ cửa sổ MSYS2, mở lại UCRT64 rồi chạy lại lệnh cập nhật. Sau đó cài công cụ:
+
+```bash
+pacman -S --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-gdb make git diffutils
+```
+
+Trong VS Code, mở terminal **MSYS2 UCRT64** đã cấu hình theo hướng dẫn, rồi clone repo vào thư mục làm việc của mình:
+
+```bash
 git clone https://github.com/thanhtrung2303/BTL-LTMM-Nhom-4-HC-128.git
 cd BTL-LTMM-Nhom-4-HC-128
 ```
 
-**Các lệnh dưới đây là giao diện dự kiến, chỉ chạy được sau khi hoàn thành mã nguồn và Makefile:**
+Nếu đã clone, chỉ cần **File → Open Folder** mở repo và tạo terminal UCRT64 tại thư mục gốc.
 
-| Lệnh | Chức năng |
+**Các lệnh dưới đây là giao diện dự kiến, chỉ chạy được sau khi hoàn thành mã nguồn và Makefile. Hiện chưa có chương trình để build/test:**
+
+| Lệnh | Chức năng / môi trường |
 |---|---|
-| `make` | Build chương trình `build/hc128` |
-| `make test` | Chạy bộ kiểm thử chức năng |
+| `make` | Build `build/hc128.exe` trên Windows |
+| `make test` | Build lại phần thay đổi và chạy bộ test chức năng trên Windows; runner C là `build/test_hc128.exe` |
 | `make test-kat` | Chạy test vector và in kết quả đối chiếu |
-| `make test-sanitize` | Kiểm tra bằng ASan/UBSan |
-| `make bench` | Chạy benchmark |
+| `make test-sanitize` | Dành cho CI Linux: build riêng và chạy ASan/UBSan; không bắt thành viên chạy trên UCRT64 |
+| `make bench` | Chạy benchmark trên máy Windows, ghi cấu hình đo |
 | `make clean` | Xóa sản phẩm build |
+
+Trước khi gửi PR có code, chạy `make` và `make test` trong terminal UCRT64. Nếu sửa lõi/API, chạy thêm KAT và các test streaming/differential liên quan; xem kết quả sanitizer trong tab **Checks** của PR sau khi CI được triển khai. Không ghi PASS khi chưa có test để chạy.
+
+Trên CI Linux, executable không có đuôi `.exe`. Makefile và script phải chọn tên theo nền tảng; không hard-code một tên duy nhất cho cả hai môi trường.
 
 CLI dự kiến có ba chế độ: `keystream`, `encrypt`, `decrypt`. Key và IV mỗi giá trị gồm đúng 32 ký tự hex. Tham số và hành vi chi tiết nằm trong [hợp đồng CLI](docs/module-contracts.md).
 
@@ -113,7 +133,7 @@ Mỗi người làm trên **nhánh riêng**, sau đó gửi yêu cầu để nh�
 ### Bước 1 — Chuẩn bị lần đầu
 
 1. Tạo tài khoản GitHub, gửi **username** cho trưởng nhóm và chấp nhận lời mời tham gia repo.
-2. Cài Git theo phần chuẩn bị phía trên. Mở terminal Ubuntu/WSL để chạy lệnh.
+2. Cài Git qua MSYS2 theo phần chuẩn bị phía trên. Mở terminal **MSYS2 UCRT64** trong VS Code để chạy lệnh.
 3. Khai báo tên và email dùng cho commit; thay nội dung ví dụ bằng thông tin của mình:
 
 ```bash
@@ -268,8 +288,8 @@ Quy ước chi tiết: [Conventions](docs/conventions.md). Khi hỏi lỗi, gử
 
 - [ ] Lõi C tự viết; CLI và xử lý file hoạt động theo hợp đồng.
 - [ ] KAT khớp từng byte với expected có nguồn độc lập; round-trip không thay thế KAT.
-- [ ] Các test bắt buộc đạt, có log thực tế; ASan/UBSan không báo lỗi trên bộ test.
-- [ ] Clone sạch có thể build, test và chạy demo theo hướng dẫn.
+- [ ] Các test bắt buộc đạt, có log thực tế; ASan/UBSan trên CI Linux không báo lỗi trên bộ test.
+- [ ] Clone sạch trên Windows UCRT64 có thể build, test và chạy demo theo hướng dẫn; CI Linux cũng đạt các job bắt buộc.
 - [ ] Đủ đóng góp và review của 10 thành viên.
 - [ ] Mã nguồn, vector, log, báo cáo, slide và demo thống nhất với release `v1.0.0`.
 

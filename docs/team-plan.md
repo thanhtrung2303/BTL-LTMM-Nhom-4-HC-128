@@ -6,15 +6,15 @@
 
 | Mã | Họ tên | MSSV | Phụ trách / sản phẩm chính | Test | Reviewer |
 |---|---|---|---|---|---|
-| TV01 | Nguyễn Thành Trung | 20233680 | include/hc128.h cùng TV05; Makefile; CI; test_main.c; tích hợp | T01 | TV10 |
+| TV01 | Nguyễn Thành Trung | 20233680 | include/hc128.h cùng TV05; Makefile Windows/Linux; CI Windows UCRT64 + Linux; test_main.c; tích hợp | T01 | TV10 |
 | TV02 | Tăng Tiến Dũng | 20233350 | Đặc tả, helpers trong src/hc128_internal.h; spec-notes.md | T02 | TV03 |
 | TV03 | Phạm Quốc Cường | 20233295 | src/hc128_init.c; mở rộng khóa/IV, khởi tạo | T03 | TV04 |
 | TV04 | Đồng Xuân Quang | 20233603 | src/hc128_core.c; cập nhật P/Q, sinh word | T04 | TV05 |
 | TV05 | Vũ Khắc Hùng | 20233428 | src/hc128_stream.c; byte dư, XOR, API | T05 | TV06 |
 | TV06 | Đặng Quốc Anh | 20233240 | app/main.c, app/hex.c, app/hex.h; CLI | T06 | TV07 |
 | TV07 | Nguyễn Anh Tú | 20233691 | tests/vectors/; test_kat.c; nguồn và manifest | T07 | TV09 |
-| TV08 | Nguyễn Tuấn Việt | 20233713 | app/file_io.c, app/file_io.h; fixture, test file | T08 | TV01 |
-| TV09 | Trần Thái Sơn | 20233625 | tools/reference/; test_differential.c; sanitizer | T09 | TV02 |
+| TV08 | Nguyễn Tuấn Việt | 20233713 | app/file_io.c, app/file_io.h Windows/Linux; fixture, test file | T08 | TV01 |
+| TV09 | Trần Thái Sơn | 20233625 | tools/reference/; test_differential.c; sanitizer trên CI Linux | T09 | TV02 |
 | TV10 | Trần Văn Vinh | 20223829 | bench/bench_hc128.c; tổng hợp báo cáo/slide, demo | T10 | TV08 |
 
 TV01 chủ trì conventions.md và team-plan.md; TV02 chủ trì spec-notes.md; TV01/TV05 đồng thuận module-contracts.md; TV07 chủ trì test-plan.md với TV09 kiểm tra oracle. Mỗi file mã nguồn có một người chủ trì; thay giao diện dùng chung phải có ý kiến người phụ thuộc.
@@ -25,9 +25,9 @@ TV01 chủ trì conventions.md và team-plan.md; TV02 chủ trì spec-notes.md; 
 |---|---|---|---|
 | M0 | TV01 tổ chức Issue, reviewer, phạm vi, deadline | Không | Đủ 10 nhiệm vụ có người nhận |
 | M1 | TV01/02/05 chốt API; TV06 chốt CLI; TV07/09 xác minh nguồn | M0 | Hợp đồng được review; có expected độc lập đầu tiên |
-| M2 | TV01 dựng build/runner; TV02 helpers; TV03 init; TV04 core | M1 | Unit liên quan đạt và ít nhất một KAT end-to-end khớp |
+| M2 | TV01 dựng build/runner cho Windows UCRT64; TV02 helpers; TV03 init; TV04 core | M1 | Unit liên quan đạt và ít nhất một KAT end-to-end khớp |
 | M3 | TV05 byte/XOR; TV06 CLI; TV08 file | M2 để tích hợp | Streaming, độ dài lẻ, input lỗi và file đạt |
-| M4 | TV07 hoàn thiện KAT; TV09 differential/sanitizer | M3 | T01–T09 đạt; không còn BLOCKED/SKIP bắt buộc |
+| M4 | TV07 hoàn thiện KAT; TV09 differential Windows và sanitizer CI Linux | M3 | T01–T09 đạt; không còn BLOCKED/SKIP bắt buộc |
 | M5 | TV10 benchmark và demo; cả nhóm hoàn thiện nội dung | M4 | T10 có số đo thật; tài liệu khớp release candidate |
 | M6 | TV01 clone sạch, cả nhóm tổng duyệt | M5 | Checklist đủ; tag v1.0.0 trỏ đúng commit |
 
@@ -89,4 +89,13 @@ Mỗi thành viên:
 - [ ] Hoàn thành nội dung báo cáo/slide và nguồn tham khảo.
 - [ ] Ghi trung thực hạn chế hoặc việc chưa hoàn thành.
 
-TV01 kiểm tra cuối: đủ đóng góp 10 người; T01–T10 có kết quả; không còn lỗi sai thuật toán/hỏng dữ liệu; clone sạch chạy được; có source báo cáo và slide, PDF, docs/demo.md, results/ và tag nhất quán. Những đường dẫn này là sản phẩm cần tạo ở các mốc sau, chưa được tạo bởi bộ tài liệu này.
+TV01 kiểm tra cuối: đủ đóng góp 10 người; T01–T10 có kết quả; không còn lỗi sai thuật toán/hỏng dữ liệu; clone sạch Windows UCRT64 chạy được; CI Linux đạt; có source báo cáo và slide, PDF, docs/demo.md, results/ và tag nhất quán. Những đường dẫn này là sản phẩm cần tạo ở các mốc sau, chưa được tạo bởi bộ tài liệu này.
+
+## 7. Phối hợp môi trường build/test
+
+- Toàn nhóm cài [Windows + VS Code + MSYS2 UCRT64](windows-build-test.md), kiểm tra `MSYSTEM`, đường dẫn GCC và Make trước khi code. Không yêu cầu Ubuntu/WSL trên máy thành viên.
+- TV01 hiện thực Makefile có tên executable theo nền tảng và các job CI; Windows là môi trường build/test chính.
+- TV06/TV08 viết test CLI/file chạy trong Bash MSYS2; TV08 tách phần I/O Windows/Linux, kiểm thử byte CR/LF/0x1A và bảo toàn file.
+- TV07/TV09 đảm bảo vector/oracle dùng cùng quy ước byte trên cả hai môi trường; TV09 phụ trách log ASan/UBSan từ CI Linux.
+- TV10 chạy benchmark và demo trên Windows, ghi OS/compiler/cờ build; không so trực tiếp tốc độ từ hai máy khác nhau để kết luận về thay đổi code.
+- Reviewer chạy test chức năng trên Windows; với sửa lõi/I/O, kiểm tra thêm kết quả job Linux của đúng commit khi CI đã có.
