@@ -7,3 +7,11 @@ RESULTS_DIR = results
 # Chặng 2: Cấu hình trình biên dịch
 CC = gcc
 CFLAGS = -Wall -Wextra -O2 -I$(INC_DIR)
+# Chặng 3: Rule tạo thư mục build và dọn dẹp
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+clean:
+	rm -rf $(BUILD_DIR)
+
+.PHONY: clean
