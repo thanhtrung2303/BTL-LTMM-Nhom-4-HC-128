@@ -46,11 +46,11 @@ An empty input_hex means the test checks keystream output.
 
 Record bytes explicitly in hexadecimal form.
 
-If a reference publishes 32-bit words, convert each word
-to bytes according to the documented reference convention.
-For HC128-001, each published 32-bit word is encoded
-least-significant byte first. Do not reverse the entire
-output string.
+The reference states that each printed 32-bit word is represented
+as s3||s2||s1||s0, while keystream bytes appear in the order
+s0, s1, s2, s3. Therefore, reverse the order of the four byte pairs
+within each printed word. For example, 73150082 becomes 82001573.
+Do not reverse the entire concatenated output.
 
 For a non-zero byte offset, initialize HC-128 from the
 beginning and consume the preceding bytes before comparing

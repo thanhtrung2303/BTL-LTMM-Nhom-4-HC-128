@@ -1,8 +1,9 @@
 # HC-128 KAT fixture
 # Source: https://www3.ntu.edu.sg/home/wuhj/research/hc/hc128.pdf
 # Source case: Appendix A, vector 1
+# Appendix A prints each word as s3||s2||s1||s0; keystream bytes are s0 first.
+# Reverse the four byte pairs within each published 32-bit word.
 # key_hex and iv_hex: 16 bytes each
-# Published output is 32-bit words; convert EACH word to little-endian bytes.
 # offset_bytes=0, length_bytes=64
 # Status: SOURCE_TRANSCRIBED; runtime KAT not yet verified.
 
