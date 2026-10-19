@@ -18,8 +18,8 @@
 
 Mã TV được giữ cố định trong Issue, Pull Request (PR), báo cáo và minh chứng kiểm thử.
 
-| Mã | Họ và tên | MSSV | Vai trò chính | 
-|---|---|---|---|---|
+| Mã | Họ và tên | MSSV | Vai trò chính  |
+|---|---|---|---|
 | TV01 | Nguyễn Thành Trung | 20233680 | Trưởng nhóm, tích hợp, build và CI |
 | TV02 | Tăng Tiến Dũng | 20233350 | Đặc tả thuật toán, phép toán 32 bit | 
 | TV03 | Phạm Quốc Cường | 20233295 | Mở rộng khóa và khởi tạo trạng thái | 
