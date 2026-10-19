@@ -89,15 +89,180 @@ cd BTL-LTMM-Nhom-4-HC-128
 
 CLI dự kiến có ba chế độ: `keystream`, `encrypt`, `decrypt`. Key và IV mỗi giá trị gồm đúng 32 ký tự hex. Tham số và hành vi chi tiết nằm trong [hợp đồng CLI](docs/module-contracts.md).
 
-## Quy trình đóng góp
+## Quy trình đóng góp dành cho người mới
 
-1. Tạo Issue ghi nhiệm vụ, người phụ trách, reviewer và tiêu chí nghiệm thu.
-2. Tạo nhánh riêng từ `main`, ví dụ `feat/TV03-init`.
-3. Thực hiện công việc và chạy test liên quan; sửa lõi/API phải chạy thêm KAT và streaming.
-4. Mở PR liên kết Issue, ghi thay đổi và kết quả kiểm tra thực tế.
-5. Review chéo, xử lý góp ý và đáp ứng các điều kiện bảo vệ nhánh trước khi merge.
+Mỗi người làm trên **nhánh riêng**, sau đó gửi yêu cầu để nhóm kiểm tra và đưa thay đổi vào `main`. Không sửa hoặc đẩy code trực tiếp lên `main`.
 
-Không tự approve PR của mình; không force-push nhánh chung. Không commit sản phẩm build, khóa thật hoặc dữ liệu riêng tư. Chi tiết: [Conventions](docs/conventions.md).
+### Các khái niệm cần biết
+
+| Từ thường gặp | Hiểu đơn giản |
+|---|---|
+| Repository / repo | Thư mục dự án và lịch sử thay đổi trên GitHub |
+| Clone | Tải repo về máy để làm việc, thường chỉ làm một lần |
+| Branch / nhánh | Nơi làm phần việc riêng; `main` là bản chung của nhóm |
+| Commit | Lưu một mốc thay đổi vào lịch sử Git trên máy |
+| Push | Đưa các commit từ máy lên GitHub |
+| Pull | Lấy thay đổi mới từ GitHub về máy |
+| Issue | Phiếu ghi nhiệm vụ hoặc lỗi cần xử lý |
+| Pull Request / PR | Đề nghị đưa thay đổi từ nhánh riêng vào `main` |
+| Review / Approve | Kiểm tra thay đổi / xác nhận đồng ý |
+| Merge | Ghép thay đổi đã được kiểm tra vào nhánh chung |
+
+**Lưu ý:** lưu file bằng Ctrl+S chưa phải commit; commit chưa đưa code lên GitHub; push chưa đưa code vào `main`. `git pull` và Pull Request là hai việc khác nhau.
+
+### Bước 1 — Chuẩn bị lần đầu
+
+1. Tạo tài khoản GitHub, gửi **username** cho trưởng nhóm và chấp nhận lời mời tham gia repo.
+2. Cài Git theo phần chuẩn bị phía trên. Mở terminal Ubuntu/WSL để chạy lệnh.
+3. Khai báo tên và email dùng cho commit; thay nội dung ví dụ bằng thông tin của mình:
+
+```bash
+git config --global user.name "Ho ten cua ban"
+git config --global user.email "email-cua-ban@example.com"
+```
+
+Dùng email đã liên kết với GitHub hoặc email noreply do GitHub cấp nếu muốn giữ riêng tư. Thiết lập này ghi danh tính commit, **không phải đăng nhập GitHub**.
+
+Nếu chưa tải repo, chạy lệnh `git clone` ở phần chuẩn bị. Nếu đã clone thì mở lại thư mục đó, không cần clone mỗi lần. Từ bước 3 bên dưới, mọi lệnh Git phải chạy trong thư mục `BTL-LTMM-Nhom-4-HC-128`.
+
+Khi push lần đầu, hoàn tất xác thực GitHub theo công cụ trên máy. Nếu Git yêu cầu mật khẩu qua HTTPS, mật khẩu tài khoản thông thường không dùng được; nhờ trưởng nhóm hỗ trợ thiết lập xác thực. Không gửi token/mật khẩu vào chat, Issue hoặc PR.
+
+### Bước 2 — Nhận nhiệm vụ trên GitHub
+
+Mở tab **Issues** của repo và tìm nhiệm vụ đã được giao. Nếu chưa có, chọn **New issue** để tạo, tránh tạo trùng.
+
+Issue cần ghi: mã TV, việc cần làm, file dự kiến sửa, test cần chạy, người review và hạn hoàn thành. Đọc [kế hoạch nhóm](docs/team-plan.md) để biết phần việc và reviewer của mình.
+
+Ví dụ: `[TV03] Triển khai khởi tạo HC-128`. Ghi nhớ số Issue để liên kết vào PR sau này.
+
+### Bước 3 — Tạo nhánh riêng trước khi sửa file
+
+Ví dụ dưới đây dành cho **TV03 làm phần init**. Thành viên khác thay `feat/TV03-init` bằng nhánh của mình, chẳng hạn `test/TV07-kat` hoặc `docs/TV10-slides`.
+
+```bash
+git status
+git switch main
+git pull --ff-only origin main
+git switch -c feat/TV03-init
+```
+
+- `git status`: xem nhánh hiện tại và file chưa lưu vào commit. Chỉ chuyển sang nhiệm vụ mới khi không còn thay đổi dở dang; nếu có, hoàn thành/lưu đúng nhánh hoặc hỏi trưởng nhóm trước.
+- `git switch main`: chuyển về bản chung trên máy.
+- `git pull --ff-only origin main`: lấy bản chung mới nhất.
+- `git switch -c ...`: tạo và chuyển sang nhánh làm việc mới.
+
+Nếu một lệnh báo lỗi, dừng để xử lý trước, không tiếp tục sao chép các lệnh phía dưới. Một nhiệm vụ dùng một nhánh; nếu quay lại nhánh đã tạo, dùng `git switch feat/TV03-init` (không thêm `-c`).
+
+### Bước 4 — Làm bài, kiểm tra và commit
+
+Sửa các file được phân công bằng trình soạn thảo, lưu file và chạy test liên quan. Nếu sửa lõi/API, chạy thêm KAT và streaming khi bộ test đã sẵn sàng. Nếu chưa có code/Makefile/test thì ghi rõ chưa chạy, không ghi PASS.
+
+Ví dụ TV03 đã tạo hoặc sửa hai file sau:
+
+```bash
+git status
+git diff
+git add src/hc128_init.c tests/test_init.c
+git diff --cached
+git commit -m "feat(init): implement HC-128 initialization"
+```
+
+Thay hai đường dẫn trên bằng **file thực tế của mình**; không chạy nguyên ví dụ nếu các file chưa tồn tại.
+
+- `git diff`: xem thay đổi ở file đã được Git theo dõi; file mới cần tự mở đọc hoặc xem sau khi add.
+- `git add`: chọn file đưa vào commit.
+- `git diff --cached`: kiểm tra đúng nội dung sắp commit.
+- `git commit -m "..."`: lưu mốc thay đổi kèm mô tả ngắn, rõ việc đã làm.
+
+Chỉ add file liên quan, tránh dùng `git add .` khi chưa kiểm tra. Không commit `build/`, file biên dịch, khóa thật hoặc dữ liệu riêng tư.
+
+### Bước 5 — Đưa nhánh lên GitHub và mở PR
+
+Lần push đầu tiên của nhánh ví dụ:
+
+```bash
+git push -u origin feat/TV03-init
+```
+
+Sau khi push thành công:
+
+1. Mở repo trên GitHub → **Pull requests → New pull request**.
+2. Chọn **base: main** (nhánh nhận) và **compare: feat/TV03-init** (nhánh của mình).
+3. Kiểm tra danh sách file và nội dung thay đổi, rồi chọn **Create pull request**.
+4. Điền tiêu đề rõ việc đã làm và mô tả theo mẫu dưới đây.
+5. Chọn người review trong **Reviewers** theo phân công; nếu không chọn được, báo trưởng nhóm.
+
+```markdown
+## Công việc
+- TV03: triển khai phần khởi tạo HC-128.
+- Closes #12
+
+## File thay đổi
+- src/hc128_init.c
+- tests/test_init.c
+
+## Kiểm tra
+- Lệnh đã chạy:
+- Kết quả thực tế:
+- Phần chưa chạy hoặc chưa hoàn thành:
+```
+
+**Thay `#12` bằng số Issue thật**, sửa nội dung mẫu cho đúng phần mình. `Closes #...` liên kết nhiệm vụ và tự đóng Issue khi PR được merge vào nhánh mặc định.
+
+### Bước 6 — Review và sửa theo góp ý
+
+**Người làm:** đọc góp ý trong PR, sửa file trên chính nhánh đó rồi lưu thêm commit và push:
+
+```bash
+git add src/hc128_init.c tests/test_init.c
+git commit -m "fix(init): address review feedback"
+git push
+```
+
+Vẫn thay đường dẫn bằng file thực tế. PR cũ tự cập nhật, **không cần tạo PR mới**. Trả lời từng góp ý, ghi kết quả kiểm tra lại và nhờ reviewer xem lại khi cần.
+
+**Người review:** mở tab **Files changed**, đọc thay đổi, lấy nhánh về chạy kiểm tra liên quan theo phân công. Khi đang ở thư mục repo và không có thay đổi dở dang:
+
+```bash
+git fetch origin
+git switch --track origin/feat/TV03-init
+```
+
+Nếu máy đã có nhánh này, dùng `git switch feat/TV03-init` rồi `git pull --ff-only`. Thay tên nhánh theo PR cần review; không sửa hoặc push vào nhánh của tác giả nếu chưa thống nhất.
+
+Trên PR, chọn **Review changes**:
+
+- **Comment**: gửi nhận xét, chưa xác nhận đồng ý.
+- **Request changes**: yêu cầu sửa trước khi merge.
+- **Approve**: đồng ý sau khi đã kiểm tra; ghi lệnh và kết quả kiểm tra thực tế.
+
+Tác giả không thể tự approve PR của mình. Viết comment “ok” cũng không được tính là approval.
+
+### Bước 7 — Merge và lấy bản mới về máy
+
+Trưởng nhóm hoặc người được chỉ định thực hiện **Merge pull request** sau khi PR đáp ứng điều kiện review và các kiểm tra bắt buộc. Thành viên không tự merge nếu chưa được giao quyền thực hiện.
+
+Khi PR đã hiện **Merged**, kiểm tra không còn thay đổi dở dang rồi chạy:
+
+```bash
+git switch main
+git pull --ff-only origin main
+```
+
+Từ bản `main` mới này, tạo **nhánh mới** cho nhiệm vụ tiếp theo. Không tiếp tục phát triển trên nhánh của PR đã merge.
+
+### Khi gặp lỗi
+
+| Tình huống | Cách xử lý |
+|---|---|
+| Push báo không có quyền / lỗi xác thực | Kiểm tra tài khoản, lời mời cộng tác và nhờ trưởng nhóm hỗ trợ |
+| Không thấy thay đổi trên GitHub | Kiểm tra đã commit và push thành công chưa; chọn đúng nhánh trên GitHub |
+| Không tạo được PR vì không có khác biệt | Kiểm tra base/compare và nhánh đã có commit mới được push chưa |
+| Đã có PR cho nhánh | Mở PR hiện có; commit và push tiếp sẽ cập nhật PR đó |
+| Không merge được | Đọc thông báo ngay dưới PR: thiếu approval, kiểm tra chưa đạt hoặc conflict |
+| Có conflict hoặc pull bị từ chối | Gửi nguyên thông báo cho trưởng nhóm; không tự dùng force-push hay reset --hard |
+
+Quy ước chi tiết: [Conventions](docs/conventions.md). Khi hỏi lỗi, gửi lệnh đã chạy, thông báo lỗi và tên nhánh; che token/mật khẩu nếu có.
 
 ## Điều kiện bàn giao
 
