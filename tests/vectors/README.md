@@ -26,7 +26,7 @@ The manifest records:
 
 - id
 - source
-- source_version
+- downloaded_date
 - source_sha256
 - source_case
 - key_hex
