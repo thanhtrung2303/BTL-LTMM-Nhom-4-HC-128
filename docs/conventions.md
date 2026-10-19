@@ -15,11 +15,11 @@ README là nguồn phân công và phạm vi tổng thể. Các quyết định 
 
 ## 2. C và tổ chức mã
 
-- C11; môi trường chuẩn Ubuntu/WSL; GCC và Clang.
+- C11; môi trường chuẩn trên máy thành viên: Windows 10/11 x64, VS Code, MSYS2 UCRT64, GCC và GNU Make. CI Linux kiểm tra thêm GCC/Clang và sanitizer. Cài đặt theo [Windows build/test](windows-build-test.md).
 - Cờ tối thiểu: `-std=c11 -Wall -Wextra -Wpedantic`. Không bỏ cảnh báo bằng cách tắt cờ toàn dự án.
 - Dùng `uint32_t` cho word, `uint8_t` cho byte, `size_t` cho độ dài bộ nhớ. Số học thuật toán theo modulo 2^32.
 - Tên hàm/biến/file dùng snake_case; API công khai có tiền tố hc128_; macro dùng HC128_ và chữ hoa.
-- Thụt 4 dấu cách, không tab; UTF-8, LF, newline cuối file; tránh dòng quá 100 ký tự khi hợp lý.
+- Code C thụt 4 dấu cách; UTF-8, LF, newline cuối file; tránh dòng quá 100 ký tự khi hợp lý. Riêng recipe của Makefile dùng ký tự tab theo cú pháp Make. Script `.sh` phải lưu LF để chạy được trong Bash MSYS2 và CI Linux.
 - Header có include guard, tự include kiểu dữ liệu mà nó sử dụng. Helpers dùng nội bộ không xuất qua header công khai.
 - Hàm nội bộ chỉ dùng trong một file phải static. Không dùng trạng thái toàn cục thay đổi được.
 - Load/store little-endian tường minh; không ép con trỏ byte thành con trỏ uint32_t. Cast sang kiểu unsigned phù hợp trước dịch bit.
@@ -68,9 +68,20 @@ Không tự approve. Với PR chỉ sửa tài liệu, kiểm tra liên kết, p
 
 ## 5. Build và kiểm thử
 
-Các target đích cần triển khai: make, make test, make test-kat, make test-sanitize, make bench, make clean. Chi tiết trong test-plan.md.
+Máy thành viên dùng **terminal MSYS2 UCRT64 trong VS Code**, GCC từ `/ucrt64/bin/gcc` và GNU Make từ `/usr/bin/make`. Không dùng nhầm compiler `/usr/bin/gcc` (MSYS) hoặc GCC cũ từ Dev-C++/MinGW khác. Các target đích: `make`, `make test`, `make test-kat`, `make bench`, `make clean`. `make test-sanitize` chỉ bắt buộc trên CI Linux; chi tiết trong [test plan](test-plan.md).
 
-CI mỗi PR: GCC/Clang, suite chức năng và ít nhất một cấu hình ASan/UBSan. Build sanitizer ở thư mục riêng, không dùng lại object tối ưu. Thiếu oracle/dependency bắt buộc phải báo BLOCKED và làm job thất bại, không âm thầm bỏ qua.
+Hợp đồng Makefile TV01 cần thực hiện:
+
+- Tạo `build/hc128.exe`, `build/test_hc128.exe` trên Windows; tên tương ứng không có `.exe` trên Linux. Biến `EXEEXT` (hoặc tương đương) phải được dùng nhất quán trong target, recipe và đường dẫn truyền vào script.
+- Dùng Bash MSYS2 cho script `.sh`; có thể gọi `bash tests/test_cli.sh` để không phụ thuộc executable bit trên Windows. Script nhận đường dẫn executable qua biến/tham số đã thống nhất.
+- `make test` build dependency trước khi chạy; runner test liên kết lõi và `tests/test_main.c`, không liên kết `app/main.c` gây trùng `main()`.
+- Build lại khi header thay đổi (ví dụ dependency `.d` với `-MMD -MP`); hỗ trợ `CC=gcc`/`CC=clang` trên CI và tách object giữa các cấu hình.
+- Không viết đường dẫn tuyệt đối của máy cá nhân vào Makefile. Quote đường dẫn trong script; bộ fixture nhị phân không bị đổi line ending.
+- Trả mã khác 0 khi build/test thất bại; không đặt dấu `-` trước lệnh test hoặc dùng `|| true` để bỏ lỗi.
+
+CI mỗi PR sau khi triển khai: job Windows dùng MSYS2 UCRT64/GCC chạy build và suite chức năng; job Linux chạy GCC/Clang và ít nhất một cấu hình ASan/UBSan. Build sanitizer ở thư mục riêng, không dùng lại object thường/tối ưu. Trên Windows, target sanitizer chưa hỗ trợ phải báo rõ và trả khác 0, không giả PASS; kết quả T09-03 được lấy từ job Linux bắt buộc cùng commit.
+
+Thiếu oracle/dependency bắt buộc phải báo BLOCKED và làm job thất bại. Chỉ các subcase đặc thù nền tảng được phân bố theo test-plan.md; không âm thầm bỏ qua. Repo hiện chưa có workflow, vì vậy hướng dẫn này là yêu cầu triển khai, không phải xác nhận CI đang hoạt động.
 
 ## 6. Quản lý dữ liệu và bàn giao
 

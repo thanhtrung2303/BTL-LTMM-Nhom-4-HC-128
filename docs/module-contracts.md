@@ -107,14 +107,14 @@ Mã thoát đề xuất: 0 thành công; 2 sai cách dùng/định dạng; 3 l�
 
 ## 6. Hợp đồng file
 
-- File input/output ở chế độ nhị phân, output chỉ chứa ciphertext thô, không thêm key/IV/header.
+- File input/output ở chế độ nhị phân (`rb`/`wb` khi dùng stdio), output chỉ chứa ciphertext thô, không thêm key/IV/header. Trên Windows không được để chuyển đổi CRLF hoặc xử lý byte 0x1A như EOF do chế độ text.
 - Dùng một context cho toàn bộ file, chunk mặc định đề xuất 4096 byte; chunk cuối xử lý đúng số byte đã đọc.
 - Phân biệt EOF bình thường với lỗi đọc; kiểm tra ghi thiếu, lỗi flush/close và lỗi đổi tên.
-- Từ chối cùng file trước khi mở ghi phá hủy dữ liệu: kiểm tra định danh thiết bị/inode trên môi trường chuẩn, gồm hard link/symlink alias.
+- Từ chối cùng file trước khi mở ghi phá hủy dữ liệu: trên Windows so định danh file từ handle (volume + file ID hoặc cơ chế tương đương), gồm hard link/symlink alias. Trên Linux dùng thiết bị/inode. Không chỉ so chuỗi đường dẫn; Windows có khác biệt chữ hoa/thường và dấu phân cách.
 - Đề xuất mặc định từ chối output đã tồn tại; chưa thêm --force vào phạm vi.
 - Ghi qua file tạm cùng thư mục đích; chỉ công bố file cuối khi toàn bộ xử lý/đóng file thành công. Công bố phải không ghi đè file xuất hiện đồng thời; không chỉ dựa vào kiểm tra tồn tại trước đó.
 - Khi lỗi: đóng tài nguyên, dọn file tạm đã tạo, trả mã khác 0; bảo toàn input và output cũ.
-- TV08 chọn cơ chế file hệ điều hành phù hợp Ubuntu/WSL, tài liệu hóa giới hạn chống race; không đưa phụ thuộc POSIX vào lõi C.
+- TV08 triển khai lớp I/O phù hợp Windows UCRT64, đồng thời có nhánh Linux để CI chạy. Cô lập API Windows/POSIX trong app/file_io.* với điều kiện biên dịch; không đưa phụ thuộc hệ điều hành vào include/hc128.h hoặc src/. Ghi rõ cơ chế tạo tạm độc quyền, công bố không ghi đè và giới hạn chống race trên mỗi nền tảng.
 - File rỗng tạo output rỗng thành công. Không coi nội dung có byte 00 là kết thúc dữ liệu.
 
 ## 7. Thay đổi hợp đồng và nghiệm thu
