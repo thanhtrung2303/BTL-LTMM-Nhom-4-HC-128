@@ -61,6 +61,15 @@ the requested segment.
 The KAT runner must compare actual and expected output
 byte by byte and report the first mismatch.
 
+Pass one or more fixture files to the runner to execute the
+complete local vector set in one invocation. The runner returns
+non-zero if any case fails, while continuing to report the
+remaining cases:
+
+```text
+build/test_kat.exe tests/vectors/hc128-kat-001-zero-key-zero-iv.txt tests/vectors/hc128-kat-002-zero-key-iv-first-byte-01.txt
+```
+
 A test case is not verified merely because the program
 returns PASS. Its source and expected output must first
 be checked independently. A successful structural check of
