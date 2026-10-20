@@ -19,7 +19,7 @@ Mỗi ID là một case hoặc một bộ case tham số hóa; runner phải ghi
 
 | ID | Chủ trì / reviewer | Input / thao tác | Expected / tiêu chí |
 |---|---|---|---|
-| T01-01 | TV01 / TV10 | Clone sạch, GCC và Clang, cờ đã thống nhất | Build không warning; không dùng sản phẩm build cũ |
+| T01-01 | TV01 / TV10 | Clone sạch Windows UCRT64/GCC; CI Linux GCC/Clang; cờ đã thống nhất | Build không warning; không dùng sản phẩm build cũ |
 | T01-02 | TV01 / TV10 | Assertion cố ý sai trên nhánh kiểm tra tạm | Runner và CI khác 0; không đưa lỗi cố ý vào main |
 | T01-03 | TV01 / TV10 | Thiếu vector/oracle bắt buộc hoặc lọc không ra test | Không báo toàn suite PASS; lỗi rõ và khác 0 |
 | T02-01 | TV02 / TV03 | Word 0, FFFFFFFF, một bit, 12345678; các rotate trong đặc tả | Kết quả tính độc lập, đúng chiều và số đếm |
@@ -44,14 +44,14 @@ Mỗi ID là một case hoặc một bộ case tham số hóa; runner phải ghi
 | T07-02 | TV07 / TV09 | Tối thiểu 2 cặp key–IV khác có nguồn, ưu tiên một bit/bất đối xứng | Tổng ít nhất 3 cặp độc lập, mỗi cặp ít nhất 64 byte |
 | T07-03 | TV07 / TV09 | Vector offset xa nếu nguồn có | Bỏ đúng offset_bytes rồi so; không nhầm word/byte |
 | T07-04 | TV07 / TV09 | Fixture vector sai độ dài/hex/thiếu trường | Parser từ chối; không tính PASS hoặc so thiếu byte |
-| T08-01 | TV08 / TV01 | File 0,1,3,4,5,4095,4096,4097 byte, 1 MiB, chứa 00/FF | Ciphertext cùng độ dài; round-trip byte-for-byte |
+| T08-01 | TV08 / TV01 | File 0,1,3,4,5,4095,4096,4097 byte, 1 MiB, chứa 00/FF/0D/0A/1A | Ciphertext cùng độ dài; round-trip byte-for-byte |
 | T08-02 | TV08 / TV01 | File mẫu cố định, xử lý chunk và một lần | Ciphertext giống API một lần; so độc lập cho mẫu nhỏ |
 | T08-03 | TV08 / TV01 | Input mất; thư mục đích không ghi được | Khác 0; không có file cuối hỏng; dọn file tạm |
-| T08-04 | TV08 / TV01 | Input=output, đường dẫn alias, hard link, symlink | Từ chối; input và output cũ nguyên vẹn |
+| T08-04 | TV08 / TV01 | Input=output, đường dẫn alias (gồm khác chữ hoa/thường trên Windows), hard link, symlink theo phân bố môi trường bên dưới | Từ chối; input và output cũ nguyên vẹn |
 | T08-05 | TV08 / TV01 | Output tồn tại; giả lập lỗi đọc/ghi/flush/close/công bố | Không ghi đè output cũ; khác 0, dọn tài nguyên |
 | T09-01 | TV09 / TV02 | Ít nhất 100 ca seed cố định, key/IV khác nhau, len 0..16384 | Khớp implementation độc lập mọi byte |
 | T09-02 | TV09 / TV02 | Xen kẽ hai context A/B, chunk khác nhau | Mỗi dòng bằng chạy riêng cùng key/IV |
-| T09-03 | TV09 / TV02 | Chạy suite dưới ASan/UBSan | Không lỗi bộ nhớ hoặc UB trên các ca đã chạy |
+| T09-03 | TV09 / TV02 | Chạy suite dưới ASan/UBSan trên CI Linux cùng commit | Không lỗi bộ nhớ hoặc UB trên các ca đã chạy |
 | T10-01 | TV10 / TV08 | 1 KiB,1 MiB,16 MiB; warm-up 1 lần, đo ít nhất 5 lần | Output đã kiểm tra; ghi trung vị, thời gian, MiB/s |
 | T10-02 | TV10 / TV08 | Demo từ release: build, KAT, file, lỗi CLI | Chạy lại được; số liệu khớp commit release |
 
@@ -85,12 +85,28 @@ Các lệnh chỉ hoạt động sau khi nhóm hiện thực Makefile và các m
 
 | Lệnh | Nội dung |
 |---|---|
-| make | Build C11 với cảnh báo đã thống nhất |
-| make test | Toàn bộ chức năng T01–T09 phù hợp môi trường; T01-02 kiểm chứng CI riêng có minh chứng |
+| make | Windows UCRT64/GCC: build C11 với cảnh báo đã thống nhất, tạo build/hc128.exe |
+| make test | Build và chạy test chức năng trên Windows UCRT64; runner build/test_hc128.exe; T01 hạ tầng và T09-03 sanitizer kiểm chứng riêng như dưới đây |
 | make test-kat | KAT và log Input/Expected/Actual đầy đủ |
-| make test-sanitize | Build riêng ASan/UBSan, chạy suite |
+| make test-sanitize | CI Linux: build riêng ASan/UBSan và chạy suite; không yêu cầu chạy trên Windows |
 | make bench | T10 benchmark; không đặt ngưỡng tốc độ tùy tiện trên CI |
 | make clean | Xóa build, giữ vector và results đã lưu |
+
+Chạy các lệnh local trong **terminal MSYS2 UCRT64 của VS Code**; [hướng dẫn cài đặt](windows-build-test.md). Trên Linux, bỏ đuôi `.exe` qua cấu hình Makefile/script, không sửa test case hoặc expected. Test C và test CLI/file phải dùng cùng bản build vừa tạo.
+
+### Phân bố kiểm thử theo môi trường
+
+| Môi trường | Kiểm tra bắt buộc | Minh chứng |
+|---|---|---|
+| Windows UCRT64/GCC | Unit, KAT, streaming, CLI/file, differential; clone sạch; benchmark/demo | Log local và job Windows CI khi đã triển khai |
+| CI Linux GCC/Clang | Build và suite chức năng, các ca POSIX của file I/O | Log job cùng commit PR |
+| CI Linux ASan/UBSan | T09-03 trên suite chức năng | Log sanitizer cùng commit, không dùng log của commit cũ |
+
+T01-01/T01-02 là kiểm chứng hạ tầng; T09-03 chạy qua target riêng trên Linux. Vì vậy local `make test` thành công chỉ chứng minh suite chức năng local đạt, không được ghi toàn bộ T01–T09 đã PASS. M4/release phải tổng hợp cả bằng chứng Windows và Linux.
+
+T08-04: chạy ca cùng đường dẫn, alias chữ hoa/thường và hard link trên Windows với filesystem hỗ trợ (môi trường chuẩn NTFS). Symlink Windows có thể cần Developer Mode/quyền tạo link: nếu thiếu, ghi subcase BLOCKED kèm lý do và chạy subcase symlink bắt buộc trên CI Linux; trước release phải chạy thêm symlink Windows trên một máy/runner được cấp quyền. Không coi việc không tạo được link là PASS. Các điều kiện này không miễn kiểm tra bảo toàn input/output.
+
+Test quyền ghi trên Windows không dựa vào riêng `chmod`, vì quyền ACL Windows khác POSIX. Dùng thư mục test có ACL phù hợp hoặc fault injection có kiểm soát; trên Linux dùng quyền POSIX/user phù hợp. Fault injection phải thực sự đi qua đường xử lý lỗi I/O, không chỉ trả mã lỗi giả từ test.
 
 T01-01 clone sạch và T01-02 làm CI thất bại là kiểm tra hạ tầng có quy trình riêng; không để make test tự clone đệ quy hoặc cố ý thất bại trên mọi lần chạy. CI/release checklist phải lưu minh chứng của chúng.
 
@@ -114,7 +130,7 @@ Result: <PASS/FAIL>
 First mismatch: <offset trong đoạn và offset tuyệt đối, nếu sai>
 ```
 
-Log tổng ghi commit, OS, compiler, cờ, lệnh, oracle version, seed, thời điểm, số PASS/FAIL/BLOCKED/SKIP/NOT RUN. Kết quả dài lưu file kèm vị trí; báo cáo đưa ít nhất 3 ví dụ Input/output đầy đủ.
+Log tổng ghi commit, OS, môi trường MSYS2 UCRT64 nếu có, compiler và đường dẫn compiler, Make version, cờ, lệnh, oracle version, seed, thời điểm, số PASS/FAIL/BLOCKED/SKIP/NOT RUN. Kết quả dài lưu file kèm vị trí; báo cáo đưa ít nhất 3 ví dụ Input/output đầy đủ.
 
 Lưu log bằng redirect và kiểm tra ngay exit status; việc tạo log không có nghĩa PASS. results/kat.log và results/environment.txt là đường dẫn đích dự kiến, chưa phải bằng chứng hiện có.
 
@@ -122,8 +138,8 @@ Lưu log bằng redirect và kiểm tra ngay exit status; việc tạo log khôn
 
 - M2: helpers/init/core và KAT đầu tiên khớp.
 - M3: streaming, lỗi đối số, CLI và file đạt.
-- M4: T01–T09 bắt buộc đạt; không còn thiếu oracle; ASan/UBSan sạch.
+- M4: T01–T09 bắt buộc đạt theo phân bố Windows/CI Linux; không còn thiếu oracle; ASan/UBSan trên CI Linux sạch.
 - M5: T10 có số đo và demo thật; báo cáo khớp log.
-- M6: clone sạch và tái chạy trên release candidate; đủ review của từng chủ trì.
+- M6: clone sạch Windows UCRT64 và tái chạy trên release candidate, các job CI Linux đạt; đủ review của từng chủ trì.
 
 Bug report gồm commit, môi trường, lệnh, input, expected/source, actual, offset sai và ảnh hưởng. Sửa xong bổ sung regression rồi chạy lại lớp liên quan; thay lõi phải chạy KAT, streaming và differential. Benchmark chỉ thực hiện sau khi output được xác minh, ghi CPU/OS/compiler/cờ, cách tính thời gian và việc có bao gồm init hay không.

@@ -1,0 +1,7 @@
+# Generated build output (README section 5.1)
+/build/
+
+# C compilation artifacts
+*.o
+*.obj
+*.exe
