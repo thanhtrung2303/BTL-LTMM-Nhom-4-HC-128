@@ -1,6 +1,6 @@
 # Hợp đồng giữa các module
 
-> Thiết kế đích cần review tại M1; chưa có header hay implementation trong repo tại thời điểm soạn. Chủ trì TV01/TV05. [README](../README.md) quy định API int: 0 thành công, khác 0 khi đối số sai.
+> API/context v1 được chốt ngày 20/10/2026 theo phân công mới của TV01. Giữ nguyên public API trong include/hc128.h. TV05 triển khai lớp byte; TV08 tích hợp build/runner. Đây là hợp đồng triển khai, không phải xác nhận thuật toán hoặc KAT đã đạt.
 
 ## 1. Phân lớp và quyền sở hữu
 
@@ -20,7 +20,7 @@ Luồng: CLI kiểm tra toàn bộ tham số → init → xử lý byte/chunk �
 
 ## 2. Context và vòng đời
 
-Layout đề xuất cho header công khai (TV01/TV05 chốt trước khi code):
+Layout đã chốt, khớp include/hc128.h:
 
 | Trường | Kiểu / ý nghĩa |
 |---|---|
@@ -31,9 +31,9 @@ Layout đề xuất cho header công khai (TV01/TV05 chốt trước khi code):
 
 Caller cấp context và gọi init trước mọi thao tác. Không cần cấp phát động trong lõi. Mỗi context chỉ xử lý một dòng, không gọi đồng thời trên cùng context; các context khác nhau độc lập. Caller không sửa trường nội bộ và không dựa vào layout để lưu định dạng file.
 
-Sau init thành công: counter ở điểm bắt đầu sinh theo đặc tả, byte_pos=4. Init lại thay thế toàn bộ trạng thái cũ và xóa ý nghĩa byte dư. Không hứa tự phát hiện context chưa init hay bị hỏng.
+Sau init thành công: counter=0, byte_pos=4 và byte_buffer được đặt về 0. Init lại thay thế toàn bộ trạng thái cũ và xóa ý nghĩa byte dư. Không hứa tự phát hiện context chưa init hay bị hỏng.
 
-## 3. Public API dự kiến
+## 3. Public API v1 đã chốt
 
 Đây là chữ ký hợp đồng, không phải mã triển khai:
 
@@ -45,7 +45,7 @@ int hc128_xor(hc128_ctx *ctx, const uint8_t *in,
               uint8_t *out, size_t len);
 ```
 
-Tên kiểu hc128_ctx và layout cần được TV01 đưa vào include/hc128.h. Quy ước mã lỗi đề xuất: HC128_OK=0, HC128_ERR_ARGUMENT=1.
+Tên kiểu hc128_ctx và layout cần được TV01 đưa vào include/hc128.h. Quy ước mã lỗi đã chốt: HC128_OK=0, HC128_ERR_ARGUMENT=1.
 
 | API | Tiền điều kiện | Hậu điều kiện thành công |
 |---|---|---|
@@ -67,9 +67,18 @@ Quy tắc chung:
 
 ## 4. Hợp đồng init ↔ core ↔ stream
 
-Đề xuất tên nội bộ: hc128_step_word(ctx), trả uint32_t. Chỉ lớp stream gọi bước này sau init; không xuất nó qua API công khai. Unit test có thể dùng header nội bộ.
+Hai hàm nội bộ được khai báo trong src/hc128_internal.h và triển khai bởi TV04 trong src/hc128_core.c:
 
-Core cập nhật một bước theo đặc tả và tăng counter modulo 1024. Hàm này không đọc/sửa byte_buffer hay byte_pos. TV03/04 phải chốt riêng đường warm-up, vì ghi phản hồi khởi tạo khác việc bỏ output thông thường.
+```c
+uint32_t hc128_step_word(hc128_ctx *ctx);
+void hc128_warmup(hc128_ctx *ctx);
+```
+
+- hc128_step_word: tiền điều kiện ctx đã init thành công; sinh word kế tiếp theo đặc tả, cập nhật P/Q và tăng counter modulo 1024. Không đọc/sửa byte_buffer hoặc byte_pos. Chỉ stream gọi trong đường chạy ứng dụng; unit test có thể gọi trực tiếp với context riêng, không trộn gọi core và public API trên cùng context.
+- hc128_warmup: chỉ TV03 gọi sau khi mở rộng khóa/IV và nạp P/Q, với counter=0. TV04 thực hiện đầy đủ 1024 bước phản hồi khởi tạo theo đặc tả HC-128, kết thúc counter=0. Không xuất keystream, không xử lý byte buffer. Không thay bằng vòng lặp bỏ output của hc128_step_word: phản hồi khởi tạo phải ghi lại P/Q theo đặc tả.
+- TV03 chịu trách nhiệm load key/IV little-endian, mở rộng W và nạp P/Q; gọi hc128_warmup đúng một lần, đặt byte_buffer về 0, byte_pos=4 rồi trả HC128_OK.
+- Hai hàm nội bộ không kiểm tra NULL, không trả mã lỗi; caller bảo đảm tiền điều kiện.
+- TV02 giữ khai báo chung và helpers trong header nội bộ; TV03/04 không tự khai báo hàm khác chữ ký ở file riêng.
 
 Lớp stream:
 
@@ -122,3 +131,13 @@ Mã thoát đề xuất: 0 thành công; 2 sai cách dùng/định dạng; 3 l�
 Mọi thay đổi: Issue nêu lý do → review bởi chủ trì và caller → cập nhật header/docs/test → tích hợp đồng bộ. TV01/05 duyệt API; TV06/08 xác nhận CLI/file; TV07/09 xác nhận khả năng kiểm thử.
 
 Nghiệm thu hợp đồng: T03 reset, T04 biên word, T05 len=0/byte dư/in-place/trộn API, T06 validation/mã thoát, T08 bảo toàn file, T09 context độc lập. Xem [test plan](test-plan.md).
+
+## 8. Phạm vi demo 21/10 và tiêu chí kiểm tra giao diện
+
+- Chốt cả ba public API ngay; trước buổi kiểm tra ưu tiên init + keystream, XOR được triển khai giai đoạn sau theo phân công TV05. Có khai báo không có nghĩa hàm đã được triển khai. Demo/KAT chưa gọi XOR khi chưa có định nghĩa; không viết stub trả thành công giả.
+- TV06: demo dùng key/IV cố định dưới dạng mảng 16 byte, init một lần rồi lấy 64 byte và in hex. Chưa yêu cầu parser/CLI đầy đủ.
+- TV07: KAT dùng expected độc lập; không gọi core trực tiếp để thay thế public API. Báo byte sai đầu tiên, expected/actual và trả mã thất bại.
+- TV08: build các module thật và runner; thiếu module hoặc test phải báo chưa hoàn thành, không in PASS giả.
+- TV01: kiểm tra header/hợp đồng thống nhất, chốt commit demo và trạng thái thực tế. CI để giai đoạn sau.
+- Khi bộ test sẵn sàng: so 64 byte một lần với các chunk 1+3+5+55 trên context khởi tạo độc lập; kiểm tra init lại tái lập output, len=0 không tiến trạng thái, NULL có thể phát hiện trả lỗi trước khi thay đổi. Trộn keystream/XOR và in-place được kiểm tra khi XOR triển khai.
+- Tên và kiểu helper toán học còn lại do TV02/03/04 thống nhất trong header nội bộ; không mở rộng public API v1 nếu chưa qua quy trình mục 7.
