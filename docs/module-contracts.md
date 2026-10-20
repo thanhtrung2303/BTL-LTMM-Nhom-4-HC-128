@@ -131,13 +131,3 @@ Mã thoát đề xuất: 0 thành công; 2 sai cách dùng/định dạng; 3 l�
 Mọi thay đổi: Issue nêu lý do → review bởi chủ trì và caller → cập nhật header/docs/test → tích hợp đồng bộ. TV01/05 duyệt API; TV06/08 xác nhận CLI/file; TV07/09 xác nhận khả năng kiểm thử.
 
 Nghiệm thu hợp đồng: T03 reset, T04 biên word, T05 len=0/byte dư/in-place/trộn API, T06 validation/mã thoát, T08 bảo toàn file, T09 context độc lập. Xem [test plan](test-plan.md).
-
-## 8. Phạm vi demo 21/10 và tiêu chí kiểm tra giao diện
-
-- Chốt cả ba public API ngay; trước buổi kiểm tra ưu tiên init + keystream, XOR được triển khai giai đoạn sau theo phân công TV05. Có khai báo không có nghĩa hàm đã được triển khai. Demo/KAT chưa gọi XOR khi chưa có định nghĩa; không viết stub trả thành công giả.
-- TV06: demo dùng key/IV cố định dưới dạng mảng 16 byte, init một lần rồi lấy 64 byte và in hex. Chưa yêu cầu parser/CLI đầy đủ.
-- TV07: KAT dùng expected độc lập; không gọi core trực tiếp để thay thế public API. Báo byte sai đầu tiên, expected/actual và trả mã thất bại.
-- TV08: build các module thật và runner; thiếu module hoặc test phải báo chưa hoàn thành, không in PASS giả.
-- TV01: kiểm tra header/hợp đồng thống nhất, chốt commit demo và trạng thái thực tế. CI để giai đoạn sau.
-- Khi bộ test sẵn sàng: so 64 byte một lần với các chunk 1+3+5+55 trên context khởi tạo độc lập; kiểm tra init lại tái lập output, len=0 không tiến trạng thái, NULL có thể phát hiện trả lỗi trước khi thay đổi. Trộn keystream/XOR và in-place được kiểm tra khi XOR triển khai.
-- Tên và kiểu helper toán học còn lại do TV02/03/04 thống nhất trong header nội bộ; không mở rộng public API v1 nếu chưa qua quy trình mục 7.
