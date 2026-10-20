@@ -391,13 +391,16 @@ int main(int argc, char **argv)
 {
     int failed = 0;
 
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <fixture-file>\n", argv[0]);
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <fixture-file> [fixture-file ...]\n",
+                argv[0]);
         return 2;
     }
 
-    if (run_case(argv[1]) != 0)
-        failed = 1;
+    for (int i = 1; i < argc; i++) {
+        if (run_case(argv[i]) != 0)
+            failed = 1;
+    }
 
     return failed ? 1 : 0;
 }
