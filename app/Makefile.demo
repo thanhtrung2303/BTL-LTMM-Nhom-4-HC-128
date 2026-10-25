@@ -1,0 +1,40 @@
+# Run from the repository root: make -f app/Makefile.demo test
+CC = gcc
+CFLAGS = -std=c11 -Wall -Wextra -Wpedantic -Werror -O2
+CPPFLAGS = -Iinclude -Isrc
+BUILD_DIR = build/tv06
+EXEEXT =
+ifeq ($(OS),Windows_NT)
+EXEEXT = .exe
+endif
+
+LIB_SOURCES = src/hc128_init.c src/hc128_core.c src/hc128_stream.c
+HEADERS = include/hc128.h src/hc128_internal.h
+DEMO = $(BUILD_DIR)/hc128_demo$(EXEEXT)
+API_TEST = $(BUILD_DIR)/test_demo_api$(EXEEXT)
+STREAM_TEST = $(BUILD_DIR)/test_stream$(EXEEXT)
+
+.PHONY: all run test
+
+all: $(DEMO)
+
+$(BUILD_DIR):
+	mkdir -p "$@"
+
+$(DEMO): app/main.c $(LIB_SOURCES) $(HEADERS) app/Makefile.demo | $(BUILD_DIR)
+	$(CC) $(CPPFLAGS) $(CFLAGS) app/main.c $(LIB_SOURCES) $(LDFLAGS) $(LDLIBS) -o "$@"
+
+$(API_TEST): tests/test_demo_api.c $(LIB_SOURCES) $(HEADERS) app/Makefile.demo | $(BUILD_DIR)
+	$(CC) $(CPPFLAGS) $(CFLAGS) tests/test_demo_api.c $(LIB_SOURCES) $(LDFLAGS) $(LDLIBS) -o "$@"
+
+$(STREAM_TEST): tests/test_tv09_stream.c $(LIB_SOURCES) $(HEADERS) app/Makefile.demo | $(BUILD_DIR)
+	$(CC) $(CPPFLAGS) $(CFLAGS) tests/test_tv09_stream.c $(LIB_SOURCES) $(LDFLAGS) $(LDLIBS) -o "$@"
+
+run: $(DEMO)
+	./$(DEMO)
+
+test: $(DEMO) $(API_TEST) $(STREAM_TEST)
+	bash tests/test_demo.sh "./$(DEMO)"
+	./$(API_TEST)
+	./$(STREAM_TEST)
+	$(MAKE) -f tests/Makefile.core test
