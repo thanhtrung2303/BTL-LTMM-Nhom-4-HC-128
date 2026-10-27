@@ -74,6 +74,16 @@ remaining cases:
 build/test_kat.exe tests/vectors/hc128-kat-001-zero-key-zero-iv.txt tests/vectors/hc128-kat-002-zero-key-iv-first-byte-01.txt tests/vectors/hc128-kat-003-key-first-byte-55-zero-iv.txt
 ```
 
+### Static validation and negative test checks
+
+To verify fixture consistency against the manifest and test rejection of malformed vectors (case T07-04), run:
+
+```bash
+python3 tests/validate_kat.py
+```
+
+Malformed vector fixtures used for parser validation testing are stored in `tests/vectors/invalid/`.
+
 A test case is not verified merely because the program
 returns PASS. Its source and expected output must first
 be checked independently. A successful structural check of
