@@ -54,7 +54,11 @@ Do not reverse the entire concatenated output.
 
 For a non-zero byte offset, initialize HC-128 from the
 beginning and consume the preceding bytes before comparing
-the requested segment.
+the requested segment. Note on test plan case T07-03: the official
+HC-128 specification (Appendix A) only publishes test vectors starting
+at offset 0. While the fixture format and test_kat runner fully support
+arbitrary byte offsets, published non-zero offset test vectors are marked
+N/A pending independent external sources.
 
 ## Verification policy
 
