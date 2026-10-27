@@ -67,7 +67,7 @@ non-zero if any case fails, while continuing to report the
 remaining cases:
 
 ```text
-build/test_kat.exe tests/vectors/hc128-kat-001-zero-key-zero-iv.txt tests/vectors/hc128-kat-002-zero-key-iv-first-byte-01.txt
+build/test_kat.exe tests/vectors/hc128-kat-001-zero-key-zero-iv.txt tests/vectors/hc128-kat-002-zero-key-iv-first-byte-01.txt tests/vectors/hc128-kat-003-key-first-byte-55-zero-iv.txt
 ```
 
 A test case is not verified merely because the program
