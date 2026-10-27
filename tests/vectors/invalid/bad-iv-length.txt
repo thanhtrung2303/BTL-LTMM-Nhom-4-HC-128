@@ -1,0 +1,7 @@
+# Negative test: iv_hex is 17 bytes (34 hex chars) instead of 16 bytes
+id=INVALID-IV-LEN
+key_hex=00000000000000000000000000000000
+iv_hex=0000000000000000000000000000000000
+offset_bytes=0
+length_bytes=4
+expected_hex=82001573
