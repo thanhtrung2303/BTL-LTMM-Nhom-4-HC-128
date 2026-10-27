@@ -54,7 +54,11 @@ Do not reverse the entire concatenated output.
 
 For a non-zero byte offset, initialize HC-128 from the
 beginning and consume the preceding bytes before comparing
-the requested segment.
+the requested segment. Note on test plan case T07-03: the official
+HC-128 specification (Appendix A) only publishes test vectors starting
+at offset 0. While the fixture format and test_kat runner fully support
+arbitrary byte offsets, published non-zero offset test vectors are marked
+N/A pending independent external sources.
 
 ## Verification policy
 
@@ -67,8 +71,18 @@ non-zero if any case fails, while continuing to report the
 remaining cases:
 
 ```text
-build/test_kat.exe tests/vectors/hc128-kat-001-zero-key-zero-iv.txt tests/vectors/hc128-kat-002-zero-key-iv-first-byte-01.txt
+build/test_kat.exe tests/vectors/hc128-kat-001-zero-key-zero-iv.txt tests/vectors/hc128-kat-002-zero-key-iv-first-byte-01.txt tests/vectors/hc128-kat-003-key-first-byte-55-zero-iv.txt
 ```
+
+### Static validation and negative test checks
+
+To verify fixture consistency against the manifest and test rejection of malformed vectors (case T07-04), run:
+
+```bash
+python3 tests/validate_kat.py
+```
+
+Malformed vector fixtures used for parser validation testing are stored in `tests/vectors/invalid/`.
 
 A test case is not verified merely because the program
 returns PASS. Its source and expected output must first
