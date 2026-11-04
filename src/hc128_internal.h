@@ -13,6 +13,10 @@ uint32_t hc128_f1(uint32_t x);
 uint32_t hc128_f2(uint32_t x);
 
 /* TV04: core functions */
+/* Internal API agreed in docs/module-contracts.md.
+ * TV02 may extend this header with shared helpers without changing these signatures.
+ * Callers provide valid state; these functions do not validate pointers.
+ */
 uint32_t hc128_step_word(hc128_ctx *ctx);
 void hc128_warmup(hc128_ctx *ctx);
 
