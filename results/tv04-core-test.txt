@@ -1,0 +1,37 @@
+TV04 standalone core verification — 2026-10-20
+Base commit: bb866da1fe4f6f06fa201136352f54515da4e304
+gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
+Platform: Linux x86_64
+Windows and integrated init/stream KAT: NOT RUN
+LeakSanitizer cannot read /proc in this environment; disabled below. ASan/UBSan remain enabled.
+
+565f58fa2474e7cdd86ea185c070bcb34241f8338ce6055378f97de061b762b7  src/hc128_core.c
+0340830b45099116f6fc5cce4fc9e5edb61592f1d2aaf778bf474631751d93c1  src/hc128_internal.h
+5d9c3f61671cd6cab69c61e503a9906cf65fa4a82510e8be69f635e1a4db9b14  tests/test_core.c
+40b175eac501c11818fe91fcee666f675fc20dc72078a70b20561adf519be0c4  tests/Makefile.core
+
+$ make -f tests/Makefile.core test
+./build/tv04/test_core
+PASS Appendix A vector 1: 16 words (64 bytes)
+PASS Appendix A vector 2: 16 words (64 bytes)
+PASS Appendix A vector 3: 16 words (64 bytes)
+PASS 4096 steps: table ownership, 511/512, 1023/0, byte state
+PASS Appendix A long KAT: 16777216 words (64 MiB), 16384 counter cycles
+PASS all TV04 standalone core tests
+
+Exit status: 0
+
+$ ASAN_OPTIONS=detect_leaks=0 make -f tests/Makefile.core sanitize
+mkdir -p build/tv04
+gcc -Iinclude -Isrc -std=c11 -Wall -Wextra -Wpedantic -Werror -O1 -g \
+	-fsanitize=address,undefined -fno-omit-frame-pointer \
+	src/hc128_core.c tests/test_core.c -o build/tv04/test_core_sanitize
+./build/tv04/test_core_sanitize
+PASS Appendix A vector 1: 16 words (64 bytes)
+PASS Appendix A vector 2: 16 words (64 bytes)
+PASS Appendix A vector 3: 16 words (64 bytes)
+PASS 4096 steps: table ownership, 511/512, 1023/0, byte state
+PASS Appendix A long KAT: 16777216 words (64 MiB), 16384 counter cycles
+PASS all TV04 standalone core tests
+
+Exit status: 0

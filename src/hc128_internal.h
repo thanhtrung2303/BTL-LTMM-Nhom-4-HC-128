@@ -1,8 +1,3 @@
-#ifndef HC128_INTERNAL_H
-#define HC128_INTERNAL_H
-
-#include "hc128.h"
-
 #include <stdint.h>
 
 /* TV02: 32-bit helper functions */

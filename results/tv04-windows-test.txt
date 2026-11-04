@@ -1,0 +1,7 @@
+./build/tv04/test_core.exe
+PASS Appendix A vector 1: 16 words (64 bytes)
+PASS Appendix A vector 2: 16 words (64 bytes)
+PASS Appendix A vector 3: 16 words (64 bytes)
+PASS 4096 steps: table ownership, 511/512, 1023/0, byte state
+PASS Appendix A long KAT: 16777216 words (64 MiB), 16384 counter cycles
+PASS all TV04 standalone core tests
