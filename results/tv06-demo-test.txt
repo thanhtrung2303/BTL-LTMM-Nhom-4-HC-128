@@ -1,0 +1,167 @@
+TV06 HC-128 demo verification
+Date: 2026-10-25
+Base main: 9dbc8b6d273450eda22860d39c5a98474b8aff56
+TV03 init source: 39ec07db6a5c7f7ab95b607144c2714484f45c86
+Platform: Linux-6.18.55-x86_64-with-glibc2.39
+Compiler: gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
+Make: GNU Make 4.3
+ASAN_OPTIONS=detect_leaks=0
+UBSAN_OPTIONS=halt_on_error=1
+LeakSanitizer disabled; ASan/UBSan enabled. Windows and repository CI not run.
+
+Earlier normal build: make -f app/Makefile.demo test
+Result: exit 0; demo exact stdout, 3 public API KATs, chunk/reset/NULL, 100 stream consistency cases and standalone core tests passed.
+Normal CFLAGS: -std=c11 -Wall -Wextra -Wpedantic -Werror -O2
+
+COMMAND: ['make', '-f', 'app/Makefile.demo', 'BUILD_DIR=build/tv06-sanitize', 'CFLAGS=-std=c11 -Wall -Wextra -Wpedantic -Werror -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer', 'LDFLAGS=-fsanitize=address,undefined', 'test']
+mkdir -p "build/tv06-sanitize"
+gcc -Iinclude -Isrc -std=c11 -Wall -Wextra -Wpedantic -Werror -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer app/main.c src/hc128_init.c src/hc128_core.c src/hc128_stream.c -fsanitize=address,undefined  -o "build/tv06-sanitize/hc128_demo"
+gcc -Iinclude -Isrc -std=c11 -Wall -Wextra -Wpedantic -Werror -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer tests/test_demo_api.c src/hc128_init.c src/hc128_core.c src/hc128_stream.c -fsanitize=address,undefined  -o "build/tv06-sanitize/test_demo_api"
+gcc -Iinclude -Isrc -std=c11 -Wall -Wextra -Wpedantic -Werror -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer tests/test_tv09_stream.c src/hc128_init.c src/hc128_core.c src/hc128_stream.c -fsanitize=address,undefined  -o "build/tv06-sanitize/test_stream"
+bash tests/test_demo.sh "./build/tv06-sanitize/hc128_demo"
+PASS demo stdout: 64 bytes match HC128-001, lowercase hex, one newline
+PASS Linux stdout write failure: exit 3
+./build/tv06-sanitize/test_demo_api
+PASS public API Appendix A vector 1: 64 bytes
+PASS public API Appendix A vector 2: 64 bytes
+PASS public API Appendix A vector 3: 64 bytes
+PASS chunks 1+3+5+55, zero-length calls, reset with buffered byte
+PASS unsigned little-endian load and NULL/zero-length state preservation
+PASS all TV06 demo integration tests
+./build/tv06-sanitize/test_stream
+TV09 stream tests
+Seed: 0x01282026
+[PASS] case 1/100
+[PASS] case 2/100
+[PASS] case 3/100
+[PASS] case 4/100
+[PASS] case 5/100
+[PASS] case 6/100
+[PASS] case 7/100
+[PASS] case 8/100
+[PASS] case 9/100
+[PASS] case 10/100
+[PASS] case 11/100
+[PASS] case 12/100
+[PASS] case 13/100
+[PASS] case 14/100
+[PASS] case 15/100
+[PASS] case 16/100
+[PASS] case 17/100
+[PASS] case 18/100
+[PASS] case 19/100
+[PASS] case 20/100
+[PASS] case 21/100
+[PASS] case 22/100
+[PASS] case 23/100
+[PASS] case 24/100
+[PASS] case 25/100
+[PASS] case 26/100
+[PASS] case 27/100
+[PASS] case 28/100
+[PASS] case 29/100
+[PASS] case 30/100
+[PASS] case 31/100
+[PASS] case 32/100
+[PASS] case 33/100
+[PASS] case 34/100
+[PASS] case 35/100
+[PASS] case 36/100
+[PASS] case 37/100
+[PASS] case 38/100
+[PASS] case 39/100
+[PASS] case 40/100
+[PASS] case 41/100
+[PASS] case 42/100
+[PASS] case 43/100
+[PASS] case 44/100
+[PASS] case 45/100
+[PASS] case 46/100
+[PASS] case 47/100
+[PASS] case 48/100
+[PASS] case 49/100
+[PASS] case 50/100
+[PASS] case 51/100
+[PASS] case 52/100
+[PASS] case 53/100
+[PASS] case 54/100
+[PASS] case 55/100
+[PASS] case 56/100
+[PASS] case 57/100
+[PASS] case 58/100
+[PASS] case 59/100
+[PASS] case 60/100
+[PASS] case 61/100
+[PASS] case 62/100
+[PASS] case 63/100
+[PASS] case 64/100
+[PASS] case 65/100
+[PASS] case 66/100
+[PASS] case 67/100
+[PASS] case 68/100
+[PASS] case 69/100
+[PASS] case 70/100
+[PASS] case 71/100
+[PASS] case 72/100
+[PASS] case 73/100
+[PASS] case 74/100
+[PASS] case 75/100
+[PASS] case 76/100
+[PASS] case 77/100
+[PASS] case 78/100
+[PASS] case 79/100
+[PASS] case 80/100
+[PASS] case 81/100
+[PASS] case 82/100
+[PASS] case 83/100
+[PASS] case 84/100
+[PASS] case 85/100
+[PASS] case 86/100
+[PASS] case 87/100
+[PASS] case 88/100
+[PASS] case 89/100
+[PASS] case 90/100
+[PASS] case 91/100
+[PASS] case 92/100
+[PASS] case 93/100
+[PASS] case 94/100
+[PASS] case 95/100
+[PASS] case 96/100
+[PASS] case 97/100
+[PASS] case 98/100
+[PASS] case 99/100
+[PASS] case 100/100
+[PASS] All TV09 stream consistency tests passed.
+make -f tests/Makefile.core test
+make[1]: Entering directory '/workspace/scratch/f4477a3f9917/hc128'
+./build/tv04/test_core
+PASS Appendix A vector 1: 16 words (64 bytes)
+PASS Appendix A vector 2: 16 words (64 bytes)
+PASS Appendix A vector 3: 16 words (64 bytes)
+PASS 4096 steps: table ownership, 511/512, 1023/0, byte state
+PASS Appendix A long KAT: 16777216 words (64 MiB), 16384 counter cycles
+PASS all TV04 standalone core tests
+make[1]: Leaving directory '/workspace/scratch/f4477a3f9917/hc128'
+
+EXIT: 0
+
+COMMAND: ['make', '-f', 'tests/Makefile.core', 'sanitize']
+mkdir -p build/tv04
+gcc -Iinclude -Isrc -std=c11 -Wall -Wextra -Wpedantic -Werror -O1 -g \
+	-fsanitize=address,undefined -fno-omit-frame-pointer \
+	src/hc128_core.c tests/test_core.c -o build/tv04/test_core_sanitize
+./build/tv04/test_core_sanitize
+PASS Appendix A vector 1: 16 words (64 bytes)
+PASS Appendix A vector 2: 16 words (64 bytes)
+PASS Appendix A vector 3: 16 words (64 bytes)
+PASS 4096 steps: table ownership, 511/512, 1023/0, byte state
+PASS Appendix A long KAT: 16777216 words (64 MiB), 16384 counter cycles
+PASS all TV04 standalone core tests
+
+EXIT: 0
+
+DEMO OUTPUT:
+82001573a003fd3b7fd72ffb0eaf63aac62f12deb629dca72785a66268ec758b1edb36900560898178e0ad009abf1f491330dc1c246e3d6cb264f6900271d59c
+
+SCOPE: This verifies the TV06 progress demo and its included dependencies.
+The full CLI, XOR/file flows, independent random differential oracle, Windows and repository CI are not covered.

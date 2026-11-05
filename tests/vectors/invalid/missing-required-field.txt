@@ -1,0 +1,6 @@
+# Negative test: missing required length_bytes field
+id=INVALID-MISSING-FIELD
+key_hex=00000000000000000000000000000000
+iv_hex=00000000000000000000000000000000
+offset_bytes=0
+expected_hex=82001573
