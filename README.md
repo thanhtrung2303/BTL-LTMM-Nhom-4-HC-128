@@ -4,7 +4,7 @@ Bài tập lớn môn **Lý thuyết mật mã**, **nhóm 4**, giảng viên **T
 
 Dự án tự triển khai thuật toán HC-128 trong eSTREAM bằng C, xây dựng chương trình mã hóa/giải mã và kiểm định bằng test vector có nguồn độc lập.
 
-> **Trạng thái:** repository hiện có tài liệu và khung thư mục. Mã nguồn C, Makefile, CI và bộ test chưa được triển khai; chưa có kết quả kiểm thử.
+> **Trạng thái:** đã có lõi HC-128, API sinh keystream, demo và bộ kiểm thử chạy qua Makefile gốc. CLI mã hóa/giải mã, xử lý file và benchmark chưa hoàn thiện.
 
 ## Mục tiêu và sản phẩm
 
@@ -92,16 +92,20 @@ cd BTL-LTMM-Nhom-4-HC-128
 
 Nếu đã clone, chỉ cần **File → Open Folder** mở repo và tạo terminal UCRT64 tại thư mục gốc.
 
-**Các lệnh dưới đây là giao diện dự kiến, chỉ chạy được sau khi hoàn thành mã nguồn và Makefile. Hiện chưa có chương trình để build/test:**
+Chạy các lệnh sau tại thư mục gốc trong terminal MSYS2 UCRT64 (hoặc Bash trên Linux):
 
 | Lệnh | Chức năng / môi trường |
 |---|---|
-| `make` | Build `build/hc128.exe` trên Windows |
-| `make test` | Build lại phần thay đổi và chạy bộ test chức năng trên Windows; runner C là `build/test_hc128.exe` |
-| `make test-kat` | Chạy test vector và in kết quả đối chiếu |
-| `make test-sanitize` | Dành cho CI Linux: build riêng và chạy ASan/UBSan; không bắt thành viên chạy trên UCRT64 |
-| `make bench` | Chạy benchmark trên máy Windows, ghi cấu hình đo |
-| `make clean` | Xóa sản phẩm build |
+| `make` | Build demo `build/hc128.exe` và runner `build/test_kat.exe` trên Windows |
+| `make demo` | In 64 byte keystream với key/IV toàn 0, lưu `results/demo_log.txt` |
+| `make test` | Chạy test demo/API/stream/core và KAT; lưu `results/test_log.txt` và `results/kat_log.txt` |
+| `make test-demo` | Chạy riêng test demo/API/stream/core, lưu `results/test_log.txt` |
+| `make test-kat` | Chạy 3 vector KAT, in Expected/Actual và PASS/FAIL, lưu `results/kat_log.txt` |
+| `make -f tests/Makefile.core sanitize` | Chạy ASan/UBSan cho core trên Linux |
+| `make bench` | Hiện chỉ là placeholder, chưa đo benchmark |
+| `make clean` | Xóa sản phẩm build, giữ log trong `results/` |
+
+Log được ghi lại mỗi lần chạy, gồm stdout và stderr. Lệnh trả lỗi nếu chương trình hoặc bước ghi log thất bại. Trên Windows, kiểm thử lỗi ghi stdout bằng `/dev/full` được ghi rõ là `NOT RUN` vì chỉ dành cho Linux.
 
 Trước khi gửi PR có code, chạy `make` và `make test` trong terminal UCRT64. Nếu sửa lõi/API, chạy thêm KAT và các test streaming/differential liên quan; xem kết quả sanitizer trong tab **Checks** của PR sau khi CI được triển khai. Không ghi PASS khi chưa có test để chạy.
 
