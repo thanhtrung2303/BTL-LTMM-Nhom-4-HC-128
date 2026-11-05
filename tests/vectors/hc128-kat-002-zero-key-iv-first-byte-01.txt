@@ -1,0 +1,15 @@
+# HC-128 KAT fixture
+# Source: https://www3.ntu.edu.sg/home/wuhj/research/hc/hc128.pdf
+# Source case: Appendix A, vector 2
+# Appendix A prints each word as s3||s2||s1||s0; keystream bytes are s0 first.
+# Reverse the four byte pairs within each published 32-bit word.
+# Key: all zero; IV: all zero except IV0 = 1
+# offset_bytes=0, length_bytes=64
+# Status: SOURCE_TRANSCRIBED; independent review and runtime verification pending.
+
+id=HC128-002
+key_hex=00000000000000000000000000000000
+iv_hex=01000000000000000000000000000000
+offset_bytes=0
+length_bytes=64
+expected_hex=d59318c058e9dbb798ec658f046617642467fc36ec6e2cc8a7381c1b952ab4c923f13e328b906a0a687b75cebbf7149f11e0cde43f17b5ae948c6089ca46cfb5

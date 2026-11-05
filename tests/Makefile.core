@@ -1,0 +1,33 @@
+# Run from the repository root: make -f tests/Makefile.core test
+CC = gcc
+CFLAGS = -std=c11 -Wall -Wextra -Wpedantic -Werror -O2
+CPPFLAGS = -Iinclude -Isrc
+EXEEXT =
+ifeq ($(OS),Windows_NT)
+EXEEXT = .exe
+endif
+CORE_TEST = build/tv04/test_core$(EXEEXT)
+CORE_SOURCES = src/hc128_core.c tests/test_core.c
+CORE_HEADERS = include/hc128.h src/hc128_internal.h
+
+.PHONY: test sanitize
+
+test: $(CORE_TEST)
+	./$(CORE_TEST)
+
+$(CORE_TEST): $(CORE_SOURCES) $(CORE_HEADERS) tests/Makefile.core
+	mkdir -p build/tv04
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(CORE_SOURCES) $(LDFLAGS) -o $@
+
+# Linux only; a separate binary avoids reusing normal-build objects.
+sanitize:
+ifeq ($(OS),Windows_NT)
+	@echo "Sanitizers require a Linux environment for this project."
+	@exit 1
+else
+	mkdir -p build/tv04
+	$(CC) $(CPPFLAGS) -std=c11 -Wall -Wextra -Wpedantic -Werror -O1 -g \
+		-fsanitize=address,undefined -fno-omit-frame-pointer \
+		$(CORE_SOURCES) -o build/tv04/test_core_sanitize
+	./build/tv04/test_core_sanitize
+endif
