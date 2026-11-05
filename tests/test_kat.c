@@ -277,13 +277,11 @@ static int run_case(const char *path)
     kat_case tc;
     uint8_t key[16];
     uint8_t iv[16];
-    uint8_t input[MAX_VECTOR_BYTES];
     uint8_t expected[MAX_VECTOR_BYTES];
     uint8_t actual[MAX_VECTOR_BYTES];
     uint8_t discard[4096];
     size_t key_len;
     size_t iv_len;
-    size_t input_len = 0;
     size_t expected_len;
     size_t remaining;
     hc128_ctx ctx;
@@ -314,13 +312,9 @@ static int run_case(const char *path)
     }
 
     if (tc.input_hex[0] != '\0') {
-        if (decode_hex(tc.input_hex, input, sizeof(input),
-                       &input_len) != 0 ||
-            input_len != tc.length_bytes) {
-            fprintf(stderr, "%s: input_hex length must equal length_bytes\n",
-                    tc.id);
-            return 1;
-        }
+        fprintf(stderr, "%s: only keystream KATs are supported; "
+                "input_hex must be empty\n", tc.id);
+        return 1;
     }
 
     printf("Case: %s\n", tc.id);
@@ -332,11 +326,7 @@ static int run_case(const char *path)
     print_hex(iv, sizeof(iv));
     printf("Offset: %zu bytes\n", tc.offset_bytes);
     printf("Length: %zu bytes\n", tc.length_bytes);
-    printf("Input: ");
-    if (input_len == 0)
-        puts("(keystream mode)");
-    else
-        print_hex(input, input_len);
+    puts("Input: (keystream mode)");
 
     if (hc128_init(&ctx, key, iv) != HC128_OK) {
         fprintf(stderr, "%s: hc128_init failed\n", tc.id);
@@ -355,16 +345,9 @@ static int run_case(const char *path)
         remaining -= chunk;
     }
 
-    if (input_len == 0) {
-        if (hc128_keystream(&ctx, actual, tc.length_bytes) != HC128_OK) {
-            fprintf(stderr, "%s: hc128_keystream failed\n", tc.id);
-            return 1;
-        }
-    } else {
-        if (hc128_xor(&ctx, input, actual, tc.length_bytes) != HC128_OK) {
-            fprintf(stderr, "%s: hc128_xor failed\n", tc.id);
-            return 1;
-        }
+    if (hc128_keystream(&ctx, actual, tc.length_bytes) != HC128_OK) {
+        fprintf(stderr, "%s: hc128_keystream failed\n", tc.id);
+        return 1;
     }
 
     printf("Expected: ");
