@@ -55,6 +55,16 @@ int main(void)
     CHECK(hc128_f2(UINT32_C(0x12345678)) ==
           UINT32_C(0xA1F78649), "f2 12345678");
 
+    /* T02-04: Kiểm tra ca biên có bit dấu (MSB set) */
+    bytes[0] = 0x00;
+    bytes[1] = 0x00;
+    bytes[2] = 0x00;
+    bytes[3] = 0x80;
+    CHECK(hc128_load32_le(bytes) == UINT32_C(0x80000000), "load32_le MSB");
+
+    CHECK(hc128_f1(UINT32_C(0x80000000)) == UINT32_C(0x11002000), "f1 MSB set");
+    CHECK(hc128_f2(UINT32_C(0x80000000)) == UINT32_C(0x00205000), "f2 MSB set");
+
     puts("All TV02 helper tests passed.");
     return 0;
 }

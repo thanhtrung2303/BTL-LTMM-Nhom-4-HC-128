@@ -48,6 +48,39 @@ README yêu cầu TV02 trình bày đầy đủ f1, f2, g1, g2, h1, h2. Bộ ghi
 
 Điều kiện đóng M1: ghi phiên bản tài liệu, mục/trang của mỗi công thức; reviewer kiểm tra độc lập; không còn ô chưa xác minh ảnh hưởng code. Đây là đầu việc có chủ trì, không phải kết quả đã hoàn tất.
 
+### Chi tiết công thức và sơ đồ thuật toán (Do TV02 bổ sung)
+
+**Nguồn tham chiếu:** Hongjun Wu, *The Stream Cipher HC-128*, LNCS 4986, 2008.
+
+**1. Phép toán số học 32-bit và Quy ước Endian**
+- **Số học 32-bit:** Thuật toán hoạt động hoàn toàn trên các từ dữ liệu (word) 32-bit không dấu. Mọi phép cộng (được ký hiệu là `+`) đều thực hiện theo modulo $2^{32}$. Trong ngôn ngữ lập trình C, điều này đạt được tự nhiên bằng cách sử dụng kiểu dữ liệu `uint32_t`.
+- **Quy ước Endian:** HC-128 quy định sử dụng chuẩn **Little-Endian**. Khi ánh xạ giữa mảng 16 byte Key/IV thành các word 32-bit, hoặc khi xuất word 32-bit ra thành luồng byte (keystream), byte ít quan trọng nhất (LSB) luôn được đặt ở địa chỉ bộ nhớ thấp nhất.
+
+**2. Các phép toán bitwise**
+- $\ggg n$ : Phép xoay phải (Right Rotate) 32-bit đi $n$ vị trí.
+- $\lll n$ : Phép xoay trái (Left Rotate) 32-bit đi $n$ vị trí.
+- $\gg n$  : Phép dịch phải (Right Shift) 32-bit đi $n$ vị trí (bù 0 vào các bit trống).
+- $\oplus$ : Phép toán bitwise XOR.
+
+**3. Các hàm phi tuyến $f_1, f_2$ (Sử dụng trong Key Expansion)**
+*(Lưu ý: 2 toán hạng đầu là xoay vòng phải, toán hạng cuối là dịch phải - tham chiếu hàm $\sigma$ của SHA-256)*
+- $f_1(x) = (x \ggg 7) \oplus (x \ggg 18) \oplus (x \gg 3)$
+- $f_2(x) = (x \ggg 17) \oplus (x \ggg 19) \oplus (x \gg 10)$
+
+**4. Các hàm cập nhật bảng trạng thái $g_1, g_2$**
+- $g_1(x, y, z) = ((x \ggg 10) \oplus (z \ggg 23)) + (y \ggg 8)$
+- $g_2(x, y, z) = ((x \lll 10) \oplus (z \lll 23)) + (y \lll 8)$
+
+**5. Các hàm trích xuất đầu ra $h_1, h_2$**
+Với $x = x_3 || x_2 || x_1 || x_0$ (trong đó $x_0$ là byte thấp nhất LSB, $x_3$ là byte cao nhất MSB):
+- $h_1(x) = Q[x_0] + Q[256 + x_2]$
+- $h_2(x) = P[x_0] + P[256 + x_2]$
+
+**6. Sơ đồ thuật toán**
+*(Sơ đồ thuật toán HC-128 mô tả luồng khởi tạo và vòng lặp sinh keystream do nhóm tự thiết kế)*
+
+![Sơ đồ thuật toán HC-128](./images/hc128-flowchart.png)
+
 ## 4. Bất biến cần kiểm tra
 
 - P/Q có đúng 512 phần tử mỗi bảng; mọi chỉ số nằm trong 0..511.
@@ -75,7 +108,7 @@ Xem [hợp đồng module](module-contracts.md) và [kế hoạch kiểm thử](
 
 Các liên kết dưới đây kế thừa nguồn tham khảo trong README, chưa được xác nhận truy cập lại trong lần lập bộ docs này:
 
-1. Hongjun Wu, *The Stream Cipher HC-128*, LNCS 4986, 2008, trang 39–47: [PDF eSTREAM](https://www.ecrypt.eu.org/stream/p3ciphers/hc/hc128_p3.pdf).
+1. Hongjun Wu, *The Stream Cipher HC-128*, LNCS 4986, 2008, trang 39–47: [PDF eSTREAM](https://personal.ntu.edu.sg/wuhj/research/hc/index.html).
 2. [The eSTREAM Portfolio, bản lưu tại CORDIS](https://cordis.europa.eu/docs/projects/cnect/6/216676/080/deliverables/001-DSYM10v1.pdf).
 3. [rand_hc: mã nguồn và test](https://docs.rs/rand_hc/latest/src/rand_hc/hc128.rs.html): chỉ là đầu mối tìm implementation độc lập; phải cố định phiên bản trước sử dụng, không dùng latest làm provenance cuối.
 4. [Dự án eSTREAM](https://www.ecrypt.eu.org/stream/).
