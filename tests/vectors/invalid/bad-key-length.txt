@@ -1,0 +1,7 @@
+# Negative test: key_hex is 15 bytes (30 hex chars) instead of 16 bytes
+id=INVALID-KEY-LEN
+key_hex=000000000000000000000000000000
+iv_hex=00000000000000000000000000000000
+offset_bytes=0
+length_bytes=4
+expected_hex=82001573

@@ -1,0 +1,7 @@
+# Negative test: non-hex characters in key_hex
+id=INVALID-HEX-CHAR
+key_hex=000000000000000000000000000000ZZ
+iv_hex=00000000000000000000000000000000
+offset_bytes=0
+length_bytes=4
+expected_hex=82001573

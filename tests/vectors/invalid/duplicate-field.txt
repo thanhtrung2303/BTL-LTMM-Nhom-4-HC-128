@@ -1,0 +1,8 @@
+# Negative test: duplicate key_hex field
+id=INVALID-DUPLICATE-FIELD
+key_hex=00000000000000000000000000000000
+key_hex=11111111111111111111111111111111
+iv_hex=00000000000000000000000000000000
+offset_bytes=0
+length_bytes=4
+expected_hex=82001573
