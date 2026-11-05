@@ -8,7 +8,7 @@ ifeq ($(OS),Windows_NT)
 EXEEXT = .exe
 endif
 
-LIB_SOURCES = src/hc128_init.c src/hc128_core.c src/hc128_stream.c
+LIB_SOURCES = src/hc128_init.c src/hc128_core.c src/hc128_stream.c src/hc128_helpers.c
 HEADERS = include/hc128.h src/hc128_internal.h
 DEMO = $(BUILD_DIR)/hc128_demo$(EXEEXT)
 API_TEST = $(BUILD_DIR)/test_demo_api$(EXEEXT)
