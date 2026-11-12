@@ -9,6 +9,7 @@ that malformed fixtures are rejected as expected by the test plan (T07-04).
 import csv
 import hashlib
 import os
+import subprocess
 import sys
 
 REQUIRED_FIELDS = {
@@ -169,11 +170,13 @@ def main() -> int:
 
     # 3. Check negative test cases (T07-04)
     invalid_dir = os.path.join(vectors_dir, "invalid")
+    invalid_files = []
     if os.path.isdir(invalid_dir):
         for fname in sorted(os.listdir(invalid_dir)):
             if not fname.endswith(".txt"):
                 continue
             fpath = os.path.join(invalid_dir, fname)
+            invalid_files.append((fname, fpath))
             fields, err = parse_fixture(fpath)
             if err is None:
                 print(
@@ -183,7 +186,47 @@ def main() -> int:
                 return 1
             print(f"[OK] Rejected {fname} as expected ({err})")
 
-    print("[OK] Static validation passed; C runtime KAT NOT RUN")
+    # 4. Run C runtime binary if built
+    kat_bin = None
+    for candidate in (
+        os.path.join(repo_root, "build", "test_kat.exe"),
+        os.path.join(repo_root, "build", "test_kat"),
+    ):
+        if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+            kat_bin = candidate
+            break
+
+    if kat_bin is None:
+        print("[OK] Static validation passed; C runtime KAT NOT RUN")
+        return 0
+
+    pos_files = [fixture_map["HC128-001"], fixture_map["HC128-002"], fixture_map["HC128-003"]]
+    res = subprocess.run(
+        [kat_bin] + pos_files,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    if res.returncode != 0:
+        print(f"[FAIL] C runtime KAT failed on valid vectors:\n{res.stderr}", file=sys.stderr)
+        return 1
+    print(f"[OK] C runtime KAT matched all {len(pos_files)} valid vectors")
+
+    for fname, fpath in invalid_files:
+        res_inv = subprocess.run(
+            [kat_bin, fpath],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if res_inv.returncode == 0:
+            print(
+                f"[FAIL] C runner unexpectedly accepted invalid fixture '{fname}'",
+                file=sys.stderr,
+            )
+            return 1
+    print(f"[OK] C runtime parser rejected all {len(invalid_files)} invalid fixtures (T07-04)")
+    print("[OK] Static and C runtime KAT validation passed")
     return 0
 
 
