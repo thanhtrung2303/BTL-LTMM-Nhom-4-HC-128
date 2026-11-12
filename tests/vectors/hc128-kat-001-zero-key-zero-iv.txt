@@ -5,9 +5,10 @@
 # Reverse the four byte pairs within each published 32-bit word.
 # key_hex and iv_hex: 16 bytes each
 # offset_bytes=0, length_bytes=64
-# Status: SOURCE_TRANSCRIBED; runtime KAT not yet verified.
+# Status: PASS; verified with C runtime KAT runner.
 
 id=HC128-001
+source=https://www3.ntu.edu.sg/home/wuhj/research/hc/hc128.pdf (Appendix A, vector 1)
 key_hex=00000000000000000000000000000000
 iv_hex=00000000000000000000000000000000
 offset_bytes=0

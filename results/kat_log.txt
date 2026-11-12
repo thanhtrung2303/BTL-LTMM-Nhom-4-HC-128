@@ -1,5 +1,5 @@
 Case: HC128-001
-Source: (not recorded)
+Source: https://www3.ntu.edu.sg/home/wuhj/research/hc/hc128.pdf (Appendix A, vector 1)
 Key: 00000000000000000000000000000000
 IV: 00000000000000000000000000000000
 Offset: 0 bytes
@@ -9,7 +9,7 @@ Expected: 82001573a003fd3b7fd72ffb0eaf63aac62f12deb629dca72785a66268ec758b1edb36
 Actual:   82001573a003fd3b7fd72ffb0eaf63aac62f12deb629dca72785a66268ec758b1edb36900560898178e0ad009abf1f491330dc1c246e3d6cb264f6900271d59c
 [PASS] HC128-001: 64 bytes matched
 Case: HC128-002
-Source: (not recorded)
+Source: https://www3.ntu.edu.sg/home/wuhj/research/hc/hc128.pdf (Appendix A, vector 2)
 Key: 00000000000000000000000000000000
 IV: 01000000000000000000000000000000
 Offset: 0 bytes
@@ -19,7 +19,7 @@ Expected: d59318c058e9dbb798ec658f046617642467fc36ec6e2cc8a7381c1b952ab4c923f13e
 Actual:   d59318c058e9dbb798ec658f046617642467fc36ec6e2cc8a7381c1b952ab4c923f13e328b906a0a687b75cebbf7149f11e0cde43f17b5ae948c6089ca46cfb5
 [PASS] HC128-002: 64 bytes matched
 Case: HC128-003
-Source: (not recorded)
+Source: https://www3.ntu.edu.sg/home/wuhj/research/hc/hc128.pdf (Appendix A, vector 3)
 Key: 55000000000000000000000000000000
 IV: 00000000000000000000000000000000
 Offset: 0 bytes
